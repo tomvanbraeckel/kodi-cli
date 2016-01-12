@@ -10,11 +10,10 @@
  
 ## Configure your KODI RPC details here
 #set -x
- 
-KODI_HOST=127.0.0.1
-KODI_PORT=8080
-KODI_USER=
-KODI_PASS=
+XBMC_HOST="${XBMC_HOST:-localhost}"
+XBMC_PORT="${XBMC_PORT:-80}"
+XBMC_USER="${XBMC_USER:-}"
+XBMC_PASS="${XBMC_PASS:-}"
 LOCK=false
 
 function xbmc_req {
