@@ -20,6 +20,22 @@ function xbmc_req {
  curl -s -i -X POST --header "Content-Type: application/json" -d "$1" http://$XBMC_USER:$XBMC_PASS@$XBMC_HOST:$XBMC_PORT/jsonrpc >/dev/null
 }
 
+function play_twitch {
+	ID=$1
+	echo -n "Opening channel $ID on $KODI_HOST ..."
+
+	# clear the list
+	xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.Clear", "params":{"playlistid":1}, "id": 1}';
+
+	# add the video to the list
+	xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.Add", "params":{"playlistid":1, "item" :{ "file" : "plugin://plugin.video.twitch/playLive/'${ID}'"}}, "id" : 2}';
+
+	# open the video
+	xbmc_req '{"jsonrpc": "2.0", "method": "Player.Open", "params":{"item":{"playlistid":1, "position" : 0}}, "id": 1}';
+
+	echo " done."
+}
+
 function play_youtube {
 
 	REGEX="^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*"
@@ -157,13 +173,14 @@ function print_usage {
 	"-y play youtube video. Use either URL/ID (of video)\n" \
 	"-o play youtube video directly on Kodi. Use the name of video.\n" \
 	"-i interactive navigation mode. Accept keyboard keys of Up, Down, Left, Right, Back,\n" \
+	"-T play Twitch live stream. Needs name of channel as argument.\n" \
 	"	Context menu and information\n" \
 	"-t 'text to send'\n" \
 	"-h displaying this help message\n"
 }
 
 ## Process command line arguments
-while getopts "y:o:pst:ih" opt; do
+while getopts "y:o:pst:T:ih" opt; do
 	case $opt in
 		y)
 			#play youtube video
@@ -180,8 +197,12 @@ while getopts "y:o:pst:ih" opt; do
 		s)
 			stop
 			;;
-		t)	send_text $2
+		t)
+			send_text $2
 			handle_keys
+			;;
+		T)
+			play_twitch $2
 			;;
 		i)
 			handle_keys
