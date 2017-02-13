@@ -195,6 +195,38 @@ function fullscreen_toggle {
 	xbmc_req '{ "jsonrpc": "2.0", "method": "GUI.SetFullscreen", "params": { "fullscreen": "toggle" }, "id": 1 }'
 }
 
+rawurlencode() {
+  local string="${1}"
+  local strlen=${#string}
+  local encoded=""
+  local pos c o
+
+  for (( pos=0 ; pos<strlen ; pos++ )); do
+     c=${string:$pos:1}
+     case "$c" in
+        [-_.~a-zA-Z0-9] ) o="${c}" ;;
+        * )               printf -v o '%%%02x' "'$c"
+     esac
+     encoded+="${o}"
+  done
+  echo "${encoded}"    # You can either set a return variable (FASTER)
+  REPLY="${encoded}"   #+or echo the result (EASIER)... or both... :p
+}
+
+function play_xbmctorrent() {
+  REGEX="^magnet:.*|.*\.torrent$"
+  if ! [[ "${1}" =~  ${REGEX} ]]; then
+    echo "Not a torrnet / magnet address"
+    exit 1
+  fi
+  echo -n "Torrent link sending: ${1}"
+  ID="${1}"
+  xbmc_req '{"jsonrpc": "2.0", "method": "Player.Open", "params":{"item":{ "file" : "plugin://plugin.video.xbmctorrent/play/'$(rawurlencode "$1")'" }}, "id": 1}'
+}
+
+
+
+
 function show_help {
 
 echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
@@ -208,6 +240,7 @@ echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
 	"-T Play Twitch live stream. Needs name of channel as argument.\n" \
 	"-D Play a direct video link. Needs name of channel as argument.\n" \
 	"-t Send text to Kodi to display on screen. Pass 'text to send as a parameter.'\n" \
+        "-r 'magnetlink' Magnet link to play via xbmctorrent\n" \
 	"-u Increase the volume on Kodi\n" \
 	"-d Decrease the volume on Kodi\n" \
 	"-f Toggle fullscreen\n" \
@@ -216,7 +249,8 @@ echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
 }
 
 ## Process command line arguments
-while getopts "yqopstiudfhD" opt; do
+while getopts "yqopstiudfrh" opt; do
+while getopts "yqopstiudfhDr" opt; do
 	case $opt in
 		y)
 			#play youtube video
@@ -232,6 +266,9 @@ while getopts "yqopstiudfhD" opt; do
 			;;
 		s)
 			stop
+			;;
+		r)
+			play_xbmctorrent "$2"
 			;;
 		t)
 			send_text $2
