@@ -40,6 +40,13 @@ function play_twitch {
 	echo " done."
 }
 
+function play_direct_link {
+	link=$1
+	echo -n "Opening $link on $KODI_HOST ..."
+	xbmc_req '{"jsonrpc": "2.0", "method": "Player.Open", "params":{"item":{"file": "'${link}'"}}, "id": 1}';
+	echo " done."
+}
+
 function play_youtube {
 
 	REGEX="^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*"
@@ -171,21 +178,21 @@ done
 }
 
 function volume_up {
-  echo "Incrementing volume"
-  xbmc_req '{ "jsonrpc": "2.0", "method": "Application.SetVolume", "params": { "volume": "increment" }, "id": 1 }' 
+	echo "Incrementing volume"
+	xbmc_req '{ "jsonrpc": "2.0", "method": "Application.SetVolume", "params": { "volume": "increment" }, "id": 1 }'
 }
 
 function volume_down {
-  echo "Decrementing volume on"
-  xbmc_req '{ "jsonrpc": "2.0", "method": "Application.SetVolume", "params": { "volume": "decrement" }, "id": 1 }' 
+	echo "Decrementing volume on"
+	xbmc_req '{ "jsonrpc": "2.0", "method": "Application.SetVolume", "params": { "volume": "decrement" }, "id": 1 }'
 }
 
 function fullscreen_toggle {
-  # Get Active players first
-  output=`xbmc_req '{"jsonrpc": "2.0", "method": "Player.GetActivePlayers", "id": 99}' true`
-  player_id=`echo $output | parse_json "playerid"`
-  echo "Toggle fullscreen on the player with ID => $player_id"
-  xbmc_req '{ "jsonrpc": "2.0", "method": "GUI.SetFullscreen", "params": { "fullscreen": "toggle" }, "id": 1 }'
+	# Get Active players first
+	output=`xbmc_req '{"jsonrpc": "2.0", "method": "Player.GetActivePlayers", "id": 99}' true`
+	player_id=`echo $output | parse_json "playerid"`
+	echo "Toggle fullscreen on the player with ID => $player_id"
+	xbmc_req '{ "jsonrpc": "2.0", "method": "GUI.SetFullscreen", "params": { "fullscreen": "toggle" }, "id": 1 }'
 }
 
 function show_help {
@@ -199,6 +206,7 @@ echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
 	"-i Interactive navigation mode. Accept keyboard keys of Up, Down, Left, Right, Back,\n" \
 	"	Context menu and information\n" \
 	"-T Play Twitch live stream. Needs name of channel as argument.\n" \
+	"-D Play a direct video link. Needs name of channel as argument.\n" \
 	"-t Send text to Kodi to display on screen. Pass 'text to send as a parameter.'\n" \
 	"-u Increase the volume on Kodi\n" \
 	"-d Decrease the volume on Kodi\n" \
@@ -208,7 +216,7 @@ echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
 }
 
 ## Process command line arguments
-while getopts "yqopstiudfh" opt; do
+while getopts "yqopstiudfhD" opt; do
 	case $opt in
 		y)
 			#play youtube video
@@ -231,6 +239,9 @@ while getopts "yqopstiudfh" opt; do
 			;;
 		T)
 			play_twitch $2
+			;;
+		D)
+			play_direct_link $2
 			;;
 		u)
 			volume_up
