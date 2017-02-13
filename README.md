@@ -16,6 +16,7 @@ Kodi/XBMC bash script to send Kodi commands using JSON RPC. It also allows sendi
 -o play youtube video directly on Kodi. Use the name of video.
 -i interactive navigation mode. Accept keyboard keys of Up, Down, Left, Right, Back, information and context menu.
 -t "text to send"
+-T twitch-channel-name
 ```
 
 #Dependencies
