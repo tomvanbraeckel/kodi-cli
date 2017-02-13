@@ -21,7 +21,7 @@ XBMC_PASS="${XBMC_PASS:-}"
 LOCK=false
 
 function xbmc_req {
- curl -v -s -i -X POST --header "Content-Type: application/json" -d "$1" http://$XBMC_USER:$XBMC_PASS@$XBMC_HOST:$XBMC_PORT/jsonrpc >/dev/null
+ curl -s -i -X POST --header "Content-Type: application/json" -d "$1" http://$XBMC_USER:$XBMC_PASS@$XBMC_HOST:$XBMC_PORT/jsonrpc >/dev/null
 }
 
 function play_twitch {
