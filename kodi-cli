@@ -236,8 +236,7 @@ function play_xbmctorrent() {
 
 
 
-function show_help {
-
+function print_usage() {
 echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
 	"-p Play/Pause the current playing video.\n" \
 	"-s Stop the current playing video.\n" \
@@ -254,7 +253,6 @@ echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
 	"-d Decrease the volume on Kodi\n" \
 	"-f Toggle fullscreen\n" \
 	"-h Show this help message\n"
-
 }
 
 ## Process command line arguments
@@ -298,8 +296,8 @@ while getopts "yqopstiudfhDr" opt; do
 		f)
 			fullscreen_toggle
 			;;
-		h)
-			show_help
+		i)
+			handle_keys
 			;;
 		\? | h) # print usage also on getopts errors
 			print_usage
