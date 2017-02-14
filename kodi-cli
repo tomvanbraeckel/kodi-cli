@@ -20,8 +20,17 @@ XBMC_USER="${XBMC_USER:-}"
 XBMC_PASS="${XBMC_PASS:-}"
 LOCK=false
 
+function parse_json {
+	key=$1
+	awk -F"[,:}]" '{for(i=1;i<=NF;i++){if($i~/'$key'\042/){print $(i+1)}}}' | tr -d '"'
+}
+
 function xbmc_req {
- curl -s -i -X POST --header "Content-Type: application/json" -d "$1" http://$XBMC_USER:$XBMC_PASS@$XBMC_HOST:$XBMC_PORT/jsonrpc >/dev/null
+	if [ $2 ] ; then
+		curl -s -i -X POST --header "Content-Type: application/json" -d "$1" http://$KODI_USER:$KODI_PASS@$KODI_HOST:$KODI_PORT/jsonrpc
+	else
+		curl -s -i -X POST --header "Content-Type: application/json" -d "$1" http://$KODI_USER:$KODI_PASS@$KODI_HOST:$KODI_PORT/jsonrpc > /dev/null
+	fi
 }
 
 function play_twitch {
