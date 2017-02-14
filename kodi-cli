@@ -14,10 +14,10 @@
 
 ## Configure your KODI RPC details here
 #set -x
-XBMC_HOST="${XBMC_HOST:-localhost}"
-XBMC_PORT="${XBMC_PORT:-80}"
-XBMC_USER="${XBMC_USER:-}"
-XBMC_PASS="${XBMC_PASS:-}"
+KODI_HOST="${KODI_HOST:-localhost}"
+KODI_PORT="${KODI_PORT:-80}"
+KODI_USER="${KODI_USER:-}"
+KODI_PASS="${KODI_PASS:-}"
 LOCK=false
 
 function parse_json {
@@ -72,7 +72,7 @@ function play_youtube {
 		ID=${BASH_REMATCH[7]}
 	fi
 
-	echo -n "Opening video id $ID on $XBMC_HOST ..."
+	echo -n "Opening video id $ID on $KODI_HOST ..."
 	xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.Clear", "params":{"playlistid":1}, "id": 1}';
 
 	# add the video to the list
@@ -113,7 +113,7 @@ function queue_yt_videos {
 function play_pause {
 	# Get Active players first
 	output=`xbmc_req '{"jsonrpc": "2.0", "method": "Player.GetActivePlayers", "id": 99}' true`
-	player_id=`echo $output | parse_json "playerid"` 
+	player_id=`echo $output | parse_json "playerid"`
 	echo "Pausing/Playing the player with ID => $player_id"
 	xbmc_req '{"jsonrpc": "2.0", "method": "Player.PlayPause", "params": { "playerid": '$player_id' }, "id": 1}' 
 }
