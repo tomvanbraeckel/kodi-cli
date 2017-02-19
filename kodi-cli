@@ -14,10 +14,10 @@
 
 ## Configure your KODI RPC details here
 #set -x
-KODI_HOST="${KODI_HOST:-192.168.2.20}"
-KODI_PORT="${KODI_PORT:-8080}"
-KODI_USER="${KODI_USER:-kodi}"
-KODI_PASS="${KODI_PASS:kodi}"
+KODI_HOST="${KODI_HOST:-localhost}"
+KODI_PORT="${KODI_PORT:-80}"
+KODI_USER="${KODI_USER:-}"
+KODI_PASS="${KODI_PASS:-}"
 LOCK=false
 
 function parse_json {
