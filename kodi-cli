@@ -27,9 +27,9 @@ function parse_json {
 
 function xbmc_req {
   if [ $2 ] ; then
-    curl -s -i -X POST --header "Content-Type: application/json" -d "$1" http://$KODI_USER:$KODI_PASS@$KODI_HOST:$KODI_PORT/jsonrpc
+    curl -s -X POST --header "Content-Type: application/json" -d "$1" http://$KODI_USER:$KODI_PASS@$KODI_HOST:$KODI_PORT/jsonrpc
   else
-    curl -s -i -X POST --header "Content-Type: application/json" -d "$1" http://$KODI_USER:$KODI_PASS@$KODI_HOST:$KODI_PORT/jsonrpc > /dev/null
+    curl -s -X POST --header "Content-Type: application/json" -d "$1" http://$KODI_USER:$KODI_PASS@$KODI_HOST:$KODI_PORT/jsonrpc > /dev/null
   fi
 }
 
@@ -116,6 +116,100 @@ function play_pause {
   player_id=`echo $output | parse_json "playerid"`
   echo "Pausing/Playing the player with ID => $player_id"
   xbmc_req '{"jsonrpc": "2.0", "method": "Player.PlayPause", "params": { "playerid": '$player_id' }, "id": 1}' 
+}
+
+function play_file_or_url {
+  FILE=$1
+
+  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.Clear", "params":{"playlistid":1}, "id": 1}';
+
+  # add the video to the list
+  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.Add", "params":{"playlistid":1, "item" :{ "file" : "'"$FILE"'"}}, "id" : 1}';
+
+  # open the video
+  xbmc_req '{"jsonrpc": "2.0", "method": "Player.Open", "params":{"item":{"playlistid":1, "position" : 0}}, "id": 1}';
+}
+
+function do_addon_list {
+  #See http://kodi.wiki/view/addon.xml for more formats
+  #xbmc.addon.audio
+  #xbmc.addon.video
+  ADDONTTYPE=$1
+  if [ "$ADDONTTYPE" == "" ];
+  then
+    echo "Retrieving addon list"
+    output=`xbmc_req '{"jsonrpc": "2.0", "method": "Addons.GetAddons", "id": 99}' true`
+  else
+    echo "Retrieving $ADDONTTYPE addon list"
+    output=`xbmc_req '{"jsonrpc": "2.0", "method": "Addons.GetAddons", "params": { "type": "'$ADDONTTYPE'" }, "id": 99}' true`
+  fi
+  
+  echo $output
+}
+
+function do_addon_exec {
+  ID=$1
+  output=`xbmc_req '{"jsonrpc": "2.0", "method": "Addons.ExecuteAddon", "params": { "addonid": "'$ID'" }, "id": 99}' true`
+  echo $output
+}
+
+function do_addon_playitem {
+  DIR=$1
+  SUBDIR="$2"
+  output=`xbmc_req '{"jsonrpc": "2.0", "method": "Files.GetDirectory", "params": { "directory": "'$DIR'" }, "id": 99}' true`
+  
+  error=`echo $output | jq -r '.error .message'`
+  
+  if [ "$error" == "null" ]
+  then
+
+    item=`echo $output | jq -r '.result .files[] | select(.label=="'"$SUBDIR"'")'`
+    itemtype=`echo $item | jq -r '.filetype'`
+    file=`echo $item | jq -r '.file'`
+    if [ "$file" == "" ]
+    then
+      echo "Directory or file $SUBDIR not found";
+    elif [ "$itemtype" == "directory" ]
+    then
+      echo "Finding $SUBDIR"
+      do_addon_playitem "$file" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "$10"
+    elif [ "$itemtype" == "file" ]
+    then
+      play_file_or_url "$file"
+    fi 
+  else
+    echo "Kodi reported an error: $error" 
+  fi
+}
+
+function do_addon {
+  case "$1" in
+    list) 
+      do_addon_list $2
+      ;;
+    exec)
+      do_addon_exec $2 $3
+      ;;
+    play)
+      echo "Addon play - looking for $3"
+      do_addon_playitem "plugin://$2/" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "$10"
+      ;;
+    *) echo "$2 is not a valid command for -a"
+  esac
+
+}
+
+function list_get_directory {
+  DIR=$1
+  if [ "$DIR" == "" ];
+  then
+    echo "Directory is required"
+    exit
+  fi
+  output=`xbmc_req '{"jsonrpc": "2.0", "method": "Files.GetDirectory", "params": { "directory": "'$DIR'" }, "id": 99}' true`
+  
+  echo $output | jq -r '.result .files[] | "\(.label): \(.file) (\(.filetype))"'
+
 }
 
 function stop {
@@ -250,13 +344,18 @@ echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
   "-t Send text to Kodi to display on screen. Pass 'text to send as a parameter.'\n" \
         "-r 'magnetlink' Magnet link to play via xbmctorrent\n" \
   "-u Increase the volume on Kodi\n" \
+  "-a Interact with the addons namespace, you can use the following subcommands\n" \
+  "\tlist [filter] - Retrieves a list of addons. Optionally accepts a filter i.e. xbmc.addon.video \n" \
+  "\texec addon action - Execute an action on an addon\n" \
+  "\tplay addon subdir [subdir...] file - Chdirs into the subdirectories of the addon and starts playing a item. Useful for addons with changing URLs\n" \
+  "-L List files in a directory\n" \
   "-d Decrease the volume on Kodi\n" \
   "-f Toggle fullscreen\n" \
   "-h Show this help message\n"
 }
 
 ## Process command line arguments
-while getopts "yqopstiudfhTDr" opt; do
+while getopts "yqopstiudfhTDraL" opt; do
   case $opt in
     y)
       #play youtube video
@@ -280,6 +379,9 @@ while getopts "yqopstiudfhTDr" opt; do
       send_text $2
       handle_keys
       ;;
+    L)
+      list_get_directory $2
+      ;;
     T)
       play_twitch $2
       ;;
@@ -294,6 +396,9 @@ while getopts "yqopstiudfhTDr" opt; do
       ;;
     f)
       fullscreen_toggle
+      ;;
+    a)
+      do_addon "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "$10"
       ;;
     i)
       handle_keys
