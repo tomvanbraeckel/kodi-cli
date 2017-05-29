@@ -3,11 +3,11 @@ kodi-cli
 
 Kodi/XBMC bash script to send Kodi commands using JSON RPC. It also allows sending youtube videos to Kodi.
 
-#Usage
+# Usage
 
 `kodi-cli -[p|i|s|(y|q) youtbe URL/ID|t "text to send"|o "youtube title"|r 'magnet://ss']`
 
-#Arguments
+# Arguments
 ```
  -p Play/Pause the current playing video.
  -s Stop the current playing video.
@@ -16,7 +16,7 @@ Kodi/XBMC bash script to send Kodi commands using JSON RPC. It also allows sendi
  -o Play youtube video directly on Kodi. Use the name of video.
  -i Interactive navigation mode. Accept keyboard keys of Up, Down, Left, Right, Back,
    Context menu and information
- -T Play Twitch live stream. Needs name of channel as argument.
+ -T Play Twitch live stream. Needs name of channel as argument. Currently not functioning with Twitch-on-Kodi 2.0
  -D Play a direct video link. Needs name of channel as argument.
  -t Send text to Kodi to display on screen. Pass 'text to send as a parameter.'
  -r 'magnetlink' Magnet link to play via xbmctorrent
@@ -31,7 +31,7 @@ Kodi/XBMC bash script to send Kodi commands using JSON RPC. It also allows sendi
  -h Show this help message
 ```
 
-#Examples
+# Examples
 List all addons
 `kodi-cli -a list`
 
@@ -45,7 +45,7 @@ Traverse through an addons directories to start playing an item. This can be han
 `kodi-cli -a play 'net.rieter.xot' "Uitzendinggemist (NPO.nl)" "Live TV" "3FM Live"`
 
 
-#Dependencies
+# Dependencies
 * curl(1) is used to make actual JSON RPC requests
 * for the "-o" option to work you'll need to install [mps-youtube](https://github.com/np1/mps-youtube)
 * jq for reading out json responses https://stedolan.github.io/jq/
