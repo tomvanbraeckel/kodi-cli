@@ -16,7 +16,7 @@ Kodi/XBMC bash script to send Kodi commands using JSON RPC. It also allows sendi
  -o Play youtube video directly on Kodi. Use the name of video.
  -i Interactive navigation mode. Accept keyboard keys of Up, Down, Left, Right, Back,
    Context menu and information
- -T Play Twitch live stream. Needs name of channel as argument. Currently not functioning with Twitch-on-Kodi 2.0
+ -T Play Twitch live stream. Needs name of channel as argument.
  -D Play a direct video link. Needs name of channel as argument.
  -t Send text to Kodi to display on screen. Pass 'text to send as a parameter.'
  -r 'magnetlink' Magnet link to play via xbmctorrent
