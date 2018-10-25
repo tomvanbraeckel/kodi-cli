@@ -1,4 +1,19 @@
 #!/bin/bash
+
+## Author: W. Pettersson © 2018 licensed under GPL
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 ## Author: Nawar
 ## License: GPL (c) 2014
 ##
@@ -10,6 +25,7 @@
 ##
 ## Volume control added by elpraga
 ## using the command found at http://forum.kodi.tv/showthread.php?tid=176795
+
 
 
 ## Configure your KODI RPC details here
@@ -36,6 +52,22 @@ function xbmc_req {
   else
     curl -s -X POST --header "Content-Type: application/json" -d "$1" http://$KODI_USER:$KODI_PASS@$KODI_HOST:$KODI_PORT/jsonrpc > /dev/null
   fi
+}
+
+function play_bbc {
+  URL=$1
+  echo -n "Opening BBC from URL $URL on $KODI_HOST ..."
+
+  # clear the list
+  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.Clear", "params":{"playlistid":1}, "id": 1}';
+
+  # add the video to the list
+  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.Add", "params":{"playlistid":1, "item" :{ "file" : "plugin://plugin.video.iplayerwww/?mode=202&url='${URL}'"}}, "id" : 2}';
+
+  # open the video
+  xbmc_req '{"jsonrpc": "2.0", "method": "Player.Open", "params":{"item":{"playlistid":1, "position" : 0}}, "id": 1}';
+
+  echo " done."
 }
 
 function play_twitch {
@@ -349,6 +381,7 @@ echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
   "-o Play youtube video directly on Kodi. Use the name of video.\n" \
   "-i Interactive navigation mode. Accept keyboard keys of Up, Down, Left, Right, Back,\n" \
   "  Context menu and information\n" \
+  "-B Play BBC iPlayer stream. Should be passed the URL to an iPlayer episode as copied from a browser (not just episode list or programme details) as an argument.\n" \
   "-T Play Twitch live stream. Needs name of channel as argument. Optional second argument is quality\n" \
   "-D Play a direct video link. Needs name of channel as argument.\n" \
   "-t Send text to Kodi to display on screen. Pass 'text to send as a parameter.'\n" \
@@ -365,7 +398,7 @@ echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
 }
 
 ## Process command line arguments
-while getopts "yqopstiudfhTDraL" opt; do
+while getopts "yqopstiudfhBTDraL" opt; do
   case $opt in
     y)
       #play youtube video
@@ -391,6 +424,9 @@ while getopts "yqopstiudfhTDraL" opt; do
       ;;
     L)
       list_get_directory $2
+      ;;
+    B)
+      play_bbc $2
       ;;
     T)
       play_twitch $2 $3
