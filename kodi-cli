@@ -34,7 +34,7 @@ KODI_HOST="${KODI_HOST:-localhost}"
 KODI_PORT="${KODI_PORT:-80}"
 KODI_USER="${KODI_USER:-}"
 KODI_PASS="${KODI_PASS:-}"
-TWITCH_QUALITY=720p60
+TWITCH_QUALITY="${TWITCH_QUALITY:-720p60}"
 # Default twitch quality. Can be 360p, 720p, 720p60, 1080p, 1080p60, Source, etc., but if the selected quality isn't
 # available the stream won't launch.
 
