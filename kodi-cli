@@ -241,6 +241,33 @@ function do_addon {
 
 }
 
+
+function do_favourites_get {
+  echo "Retrieving favourites list"
+  output=`xbmc_req '{"jsonrpc": "2.0", "method": "Favourites.GetFavourites", "params": { "properties": [ "window","path","windowparameter" ] } , "id": 99}' true`
+
+  echo $output
+}
+
+# Placeholder function, ready for future implementation.
+function do_favourites_add {
+  echo "WARNING: adding favourites is not (yet) supported."
+}
+
+
+function do_favourites {
+  case "$1" in
+    get)
+      do_favourites_get
+      ;;
+    add)
+      do_favourites_add
+      ;;
+    *) echo "ERROR: $1 is not a valid, supported subcommand."
+  esac
+}
+
+
 function list_get_directory {
   DIR=$1
   if [ "$DIR" == "" ];
@@ -391,6 +418,8 @@ echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
   "\tlist [filter] - Retrieves a list of addons. Optionally accepts a filter i.e. xbmc.addon.video \n" \
   "\texec addon action - Execute an action on an addon\n" \
   "\tplay addon subdir [subdir...] file - Chdirs into the subdirectories of the addon and starts playing a item. Useful for addons with changing URLs\n" \
+  "-F Interact with the favourites namespace, you can use the following subcommands:\n" \
+  "\tget - Retrieves a list of favourites.\n" \
   "-L List files in a directory\n" \
   "-d Decrease the volume on Kodi\n" \
   "-f Toggle fullscreen\n" \
@@ -398,7 +427,7 @@ echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
 }
 
 ## Process command line arguments
-while getopts "yqopstiudfhBTDraL" opt; do
+while getopts "yqopstiudfhBTDraLF" opt; do
   case $opt in
     y)
       #play youtube video
@@ -442,6 +471,10 @@ while getopts "yqopstiudfhBTDraL" opt; do
       ;;
     f)
       fullscreen_toggle
+      ;;
+    F)
+      shift
+      do_favourites $@
       ;;
     a)
       do_addon "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "$10"
