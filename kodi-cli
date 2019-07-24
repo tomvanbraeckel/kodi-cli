@@ -236,7 +236,7 @@ function do_addon {
       echo "Addon play - looking for $3"
       do_addon_playitem "plugin://$2/" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "$10"
       ;;
-    *) echo "$2 is not a valid command for -a"
+    *) echo "$1 is not a valid command for -a"
   esac
 
 }
@@ -387,7 +387,7 @@ echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
   "-t Send text to Kodi to display on screen. Pass 'text to send as a parameter.'\n" \
   "-r 'magnetlink' Magnet link to play via xbmctorrent\n" \
   "-u Increase the volume on Kodi\n" \
-  "-a Interact with the addons namespace, you can use the following subcommands\n" \
+  "-a Interact with the addons namespace, you can use the following subcommands:\n" \
   "\tlist [filter] - Retrieves a list of addons. Optionally accepts a filter i.e. xbmc.addon.video \n" \
   "\texec addon action - Execute an action on an addon\n" \
   "\tplay addon subdir [subdir...] file - Chdirs into the subdirectories of the addon and starts playing a item. Useful for addons with changing URLs\n" \
