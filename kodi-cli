@@ -126,6 +126,33 @@ function play_youtube {
   echo " done."
 }
 
+function queue_generic {
+  playlistid="$1"
+  toqueue="$2"
+  if [ -z "$toqueue" -o -z "$playlistid" ]; then
+	  echo "Usage: $0 playlistid url"
+	  echo
+	  echo "Use playlist 0 for audio, playlist 1 for video and playlist 2 for images."
+	  echo
+	  echo "Examples: $0 0 http://streaming.radionomy.com/GoldenOldiesStation"
+	  echo "Examples: $0 1 plugin://plugin.video.youtube/?action=play_video&videoid=CFsn1CUyXWs"
+	  echo "Examples: $0 2 https://en.wikipedia.org/static/images/project-logos/enwiki.png"
+	  return
+  fi
+
+  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.Add", "params":{"playlistid":'${playlistid}', "item" :{ "file" : "'${toqueue}'"}}, "id": 1}';
+
+  echo Done, playlists are now:
+  echo ------------------------
+  echo playlist 0:
+  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{"playlistid":0}, "id": 97}' true
+  echo playlist 1:
+  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{"playlistid":1}, "id": 96}' true
+  echo playlist 2:
+  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{"playlistid":2}, "id": 96}' true
+
+}
+
 function queue_yt_videos {
 
   REGEX="^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*"
@@ -146,17 +173,6 @@ function queue_yt_videos {
   # Changed this to playlist 0 because that's the default one:
   output=`xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{"playlistid":0}, "id": 95}' true`
   numberitems=`echo $output | parse_json "total"`
-
-  #if false; then
-  echo playlist 0:
-  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{"playlistid":0}, "id": 97}' true
-  echo playlist 1:
-  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{"playlistid":1}, "id": 96}' true
-  return;
-  #fi
-
-  #xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{}, "id": 98}' true
-  #xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "id": 98}' true
 
   echo -n "Video with $ID added to playlist 0 on $KODI_HOST which has ($numberitems) items..."
   # add the video to the list
@@ -424,6 +440,7 @@ echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
   "-s Stop the current playing video.\n" \
   "-y Play youtube video. Use either URL/ID (of video).\n" \
   "-q Queue youtube video to the current list. Use either URL/ID (of video). Use instead of -y.\n" \
+  "-g Queue generic URL in generic playlist.\n" \
   "-o Play youtube video directly on Kodi. Use the name of video.\n" \
   "-i Interactive navigation mode. Accept keyboard keys of Up, Down, Left, Right, Back,\n" \
   "  Context menu and information\n" \
@@ -447,7 +464,7 @@ echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
 }
 
 ## Process command line arguments
-while getopts "yqopstiudfhBTDraLFm" opt; do
+while getopts "ygqopstiudfhBTDraLFm" opt; do
   case $opt in
     y)
       #play youtube video
@@ -483,8 +500,11 @@ while getopts "yqopstiudfhBTDraLFm" opt; do
     D)
       play_direct_link $2
       ;;
+    g)
+      queue_generic "$2" "$3"
+      ;;
     q)
-      queue_yt_videos $2
+      queue_yt_videos "$2"
       ;;
     u)
       volume_up
