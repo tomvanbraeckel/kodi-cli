@@ -142,12 +142,26 @@ function queue_yt_videos {
     ID=${BASH_REMATCH[7]}
   fi
 
-  output=`xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{"playlistid":1}, "id": 99}' true`
+  #output=`xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{"playlistid":1}, "id": 95}' true`
+  # Changed this to playlist 0 because that's the default one:
+  output=`xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{"playlistid":0}, "id": 95}' true`
   numberitems=`echo $output | parse_json "total"`
 
-  echo -n "Video added to the current playlist $ID on $KODI_HOST which has ($numberitems) items..."
+  #if false; then
+  echo playlist 0:
+  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{"playlistid":0}, "id": 97}' true
+  echo playlist 1:
+  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{"playlistid":1}, "id": 96}' true
+  return;
+  #fi
+
+  #xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{}, "id": 98}' true
+  #xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "id": 98}' true
+
+  echo -n "Video with $ID added to playlist 0 on $KODI_HOST which has ($numberitems) items..."
   # add the video to the list
-  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.Add", "params":{"playlistid":1, "item" :{ "file" : "plugin://plugin.video.youtube/?action=play_video&videoid='$ID'"}}, "id" : 1}';
+  # xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.Add", "params":{"playlistid":1, "item" :{ "file" : "plugin://plugin.video.youtube/?action=play_video&videoid='$ID'"}}, "id" : 1}';
+  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.Add", "params":{"playlistid":0, "item" :{ "file" : "plugin://plugin.video.youtube/?action=play_video&videoid='$ID'"}}, "id" : 1}';
 
   echo " done."
 }
@@ -359,6 +373,11 @@ function volume_down {
   xbmc_req '{ "jsonrpc": "2.0", "method": "Application.SetVolume", "params": { "volume": "decrement" }, "id": 1 }'
 }
 
+function volume_max {
+  echo "Setting volume max"
+  xbmc_req '{ "jsonrpc": "2.0", "method": "Application.SetVolume", "params": { "volume": 100 }, "id": 1 }'
+}
+
 function fullscreen_toggle {
   # Get Active players first
   output=`xbmc_req '{"jsonrpc": "2.0", "method": "Player.GetActivePlayers", "id": 99}' true`
@@ -422,12 +441,13 @@ echo -e "\n kodi-cli -[p|i|h|s|y youtbe URL/ID|t 'text to send']\n\n" \
   "\tget - Retrieves a list of favourites.\n" \
   "-L List files in a directory\n" \
   "-d Decrease the volume on Kodi\n" \
+  "-m Set max volume on Kodi\n" \
   "-f Toggle fullscreen\n" \
   "-h Show this help message\n"
 }
 
 ## Process command line arguments
-while getopts "yqopstiudfhBTDraLF" opt; do
+while getopts "yqopstiudfhBTDraLFm" opt; do
   case $opt in
     y)
       #play youtube video
@@ -463,11 +483,17 @@ while getopts "yqopstiudfhBTDraLF" opt; do
     D)
       play_direct_link $2
       ;;
+    q)
+      queue_yt_videos $2
+      ;;
     u)
       volume_up
       ;;
     d)
       volume_down
+      ;;
+    m)
+      volume_max
       ;;
     f)
       fullscreen_toggle
