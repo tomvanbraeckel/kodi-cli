@@ -134,7 +134,7 @@ function queue_generic {
 	  echo
 	  echo "Use playlist 0 for audio, playlist 1 for video and playlist 2 for images."
 	  echo
-	  echo "Examples: $0 0 http://streaming.radionomy.com/GoldenOldiesStation"
+	  echo "Examples: $0 0 http://icecast.vrtcdn.be/mnm_hits-high.mp3"
 	  echo "Examples: $0 1 plugin://plugin.video.youtube/?action=play_video&videoid=CFsn1CUyXWs"
 	  echo "Examples: $0 2 https://en.wikipedia.org/static/images/project-logos/enwiki.png"
 	  return
@@ -144,12 +144,11 @@ function queue_generic {
 
   echo Done, playlists are now:
   echo ------------------------
-  echo playlist 0:
-  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{"playlistid":0}, "id": 97}' true
-  echo playlist 1:
-  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{"playlistid":1}, "id": 96}' true
-  echo playlist 2:
-  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{"playlistid":2}, "id": 96}' true
+  for playlist in $(seq 0 2); do
+	  echo
+	  echo playlist $playlist:
+	  xbmc_req '{"jsonrpc": "2.0", "method": "Playlist.GetItems", "params":{"playlistid":'${playlist}'}, "id": 95}' true
+  done
 
 }
 
